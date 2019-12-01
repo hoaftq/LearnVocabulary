@@ -20,7 +20,7 @@ namespace LearnVocabulary.Controllers
 
         public IActionResult Index()
         {
-            return RedirectToAction("RandomVocabulary", "Vocabularies");
+            return RedirectToAction("Random", "Vocabulary");
         }
 
         public IActionResult About()

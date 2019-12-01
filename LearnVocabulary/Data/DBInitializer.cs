@@ -17,7 +17,7 @@ namespace LearnVocabulary.Data
 
             vocabulary.Id = default;
             vocabulary.DefinitionId = definition.Id;
-            context.Vocabularies.Add(vocabulary);
+            context.Vocabulary.Add(vocabulary);
             context.SaveChanges();
 
             foreach (var usage in usages)
@@ -43,7 +43,7 @@ namespace LearnVocabulary.Data
         {
             return; // TODO
 
-            if (context.Vocabularies.Any())
+            if (context.Vocabulary.Any())
             {
                 return;
             }

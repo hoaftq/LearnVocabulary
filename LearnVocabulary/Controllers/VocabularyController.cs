@@ -9,22 +9,22 @@ using LearnVocabulary.Models;
 
 namespace LearnVocabulary.Controllers
 {
-    public class VocabulariesController : Controller
+    public class VocabularyController : Controller
     {
         private readonly VocabularyContext _context;
 
-        public VocabulariesController(VocabularyContext context)
+        public VocabularyController(VocabularyContext context)
         {
             _context = context;
         }
 
-        // GET: Vocabularies
+        // GET: Vocabulary
         public async Task<IActionResult> Index(string searchString)
         {
             ViewData["SearchString"] = searchString;
 
             // Append search condition to the query
-            var query = _context.Vocabularies.Select(v => v);
+            var query = _context.Vocabulary.Select(v => v);
             if (!string.IsNullOrEmpty(searchString))
             {
                 query = query.Where(v => v.Words.ToLower().Contains(searchString.ToLower()));
@@ -57,7 +57,7 @@ namespace LearnVocabulary.Controllers
             return View(model);
         }
 
-        // GET: Vocabularies/Details/5
+        // GET: Vocabulary/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -75,7 +75,7 @@ namespace LearnVocabulary.Controllers
             return View(model);
         }
 
-        // GET: Vocabularies/Create
+        // GET: Vocabulary/Create
         public IActionResult Create()
         {
             var viewModel = new VocabularyViewModel()
@@ -86,7 +86,7 @@ namespace LearnVocabulary.Controllers
             return View(viewModel);
         }
 
-        // POST: Vocabularies/Create
+        // POST: Vocabulary/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -123,7 +123,7 @@ namespace LearnVocabulary.Controllers
             return View(viewModel);
         }
 
-        // GET: Vocabularies/Edit/5
+        // GET: Vocabulary/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -151,7 +151,7 @@ namespace LearnVocabulary.Controllers
             return View(model);
         }
 
-        // POST: Vocabularies/Edit/5
+        // POST: Vocabulary/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -167,7 +167,7 @@ namespace LearnVocabulary.Controllers
             {
                 try
                 {
-                    var vocabulary = await _context.Vocabularies
+                    var vocabulary = await _context.Vocabulary
                             .Include(v => v.Definition)
                             .Include(v => v.VocabularyUsages)
                             .ThenInclude(vu => vu.Usage)
@@ -211,7 +211,7 @@ namespace LearnVocabulary.Controllers
                         }
                     }
 
-                    var variations = await _context.Vocabularies
+                    var variations = await _context.Vocabulary
                         .Where(v1 => v1.DefinitionId == vocabulary.DefinitionId && v1.Id != viewModel.Id)
                         .ToListAsync();
 
@@ -235,7 +235,7 @@ namespace LearnVocabulary.Controllers
                     {
                         if (inputVar.Id == default && !string.IsNullOrWhiteSpace(inputVar.Words))
                         {
-                            _context.Vocabularies.Add(new Vocabulary()
+                            _context.Vocabulary.Add(new Vocabulary()
                             {
                                 Words = inputVar.Words,
                                 Type = inputVar.Type,
@@ -264,7 +264,7 @@ namespace LearnVocabulary.Controllers
             return View(viewModel);
         }
 
-        // GET: Vocabularies/Delete/5
+        // GET: Vocabulary/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -282,12 +282,12 @@ namespace LearnVocabulary.Controllers
             return View(vocabulary);
         }
 
-        // POST: Vocabularies/Delete/5
+        // POST: Vocabulary/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vocabulary = await _context.Vocabularies
+            var vocabulary = await _context.Vocabulary
                 .Include(v => v.Definition)
                 .Include(v => v.VocabularyUsages)
                 .ThenInclude(vu => vu.Usage)
@@ -297,20 +297,47 @@ namespace LearnVocabulary.Controllers
                 return NotFound();
             }
 
-            _context.Vocabularies.Remove(vocabulary);
+            _context.Vocabulary.Remove(vocabulary);
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> RandomVocabulary()
+        public async Task<IActionResult> Random()
         {
             return View(await GetRandomVocabulary());
         }
 
+        public async Task<IActionResult> RecentVocabulary(int? id)
+        {
+            var recentWords = await _context.Vocabulary
+                .OrderByDescending(v => v.UpdateDate)
+                .Take(10)
+                .AsNoTracking()
+                .ToListAsync();
+
+            int selectedId;
+            if (id != null)
+            {
+                selectedId = id.Value;
+            }
+            else
+            {
+                selectedId = recentWords.First().Id;
+            }
+
+            var model = new RecentVocabularyViewModel()
+            {
+                RecentVocabulary = recentWords,
+                SelectedVocabulary = await GetVocabularyById(selectedId)
+            };
+
+            return View(model);
+        }
+
         private async Task<VocabularyViewModel> GetVocabularyById(int id)
         {
-            var vocabulary = await _context.Vocabularies
+            var vocabulary = await _context.Vocabulary
                 .Include(v => v.Definition)
                 .Include(v => v.VocabularyUsages)
                 .ThenInclude(vu => vu.Usage)
@@ -323,7 +350,7 @@ namespace LearnVocabulary.Controllers
 
         private async Task<VocabularyViewModel> GetRandomVocabulary()
         {
-            var count = _context.Vocabularies.Count();
+            var count = _context.Vocabulary.Count();
             if (count == 0)
             {
                 ModelState.AddModelError(string.Empty, "There is no vocabulary yet");
@@ -333,7 +360,7 @@ namespace LearnVocabulary.Controllers
             Random random = new Random();
             int pos = random.Next(count);
 
-            var vocabulary = await _context.Vocabularies
+            var vocabulary = await _context.Vocabulary
                 .Include(v => v.Definition)
                 .Include(v => v.VocabularyUsages)
                 .ThenInclude(vu => vu.Usage)
@@ -351,7 +378,7 @@ namespace LearnVocabulary.Controllers
                 return null;
             }
 
-            var variations = await _context.Vocabularies
+            var variations = await _context.Vocabulary
                 .Where(v => v.DefinitionId == vocabulary.DefinitionId && v.Id != vocabulary.Id)
                 .ToListAsync();
 
@@ -380,7 +407,7 @@ namespace LearnVocabulary.Controllers
 
         private bool VocabularyExists(int id)
         {
-            return _context.Vocabularies.Any(e => e.Id == id);
+            return _context.Vocabulary.Any(e => e.Id == id);
         }
     }
 }

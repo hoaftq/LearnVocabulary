@@ -13,7 +13,7 @@ namespace LearnVocabulary.Data
         {
         }
 
-        public DbSet<Vocabulary> Vocabularies { get; set; }
+        public DbSet<Vocabulary> Vocabulary { get; set; }
 
         public DbSet<Definition> Definitions { get; set; }
 
