@@ -1,5 +1,5 @@
 ### LearnVocabulary
-A simple tool that helps someone with their foreign language learning using Asp.net core MVC
+A simple tool that helps someone with their foreign language learning using Asp.net core MVC(EF, JQuery, Bootstrap)
 
 The ideal is when you are learning new vocabulary you should learn them in context. That could be some sentences that use the vocabulary.
 You can make up sentences yourself or collect common sentences from books or other materials. So you learn vocabulary through reading, writing or even speaking out those sentences.
